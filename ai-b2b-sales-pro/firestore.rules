@@ -1,0 +1,57 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: leads
+// Document ID: auto-generated
+// Fields:
+//   - websiteUrl: string (required, uri)
+//   - contactEmail: string (required, email)
+//   - companyName: string (optional)
+//   - status: string (required, enum: pending, processing, completed, failed)
+//   - websiteText: string (optional)
+//   - screenshotUrl: string (optional)
+//   - generatedProposal: string (optional)
+//   - createdAt: timestamp (required)
+//   - updatedAt: timestamp (required)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "mexc1048472@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidLead(data) {
+      return data.keys().hasAll(['websiteUrl', 'contactEmail', 'status', 'createdAt', 'updatedAt']) &&
+             data.websiteUrl is string &&
+             data.contactEmail is string &&
+             data.status in ['pending', 'processing', 'completed', 'failed', 'skipped'] &&
+             (!('score' in data) || data.score is number) &&
+             (!('language' in data) || data.language in ['ru', 'en']) &&
+             (!('emailSent' in data) || data.emailSent is bool) &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    match /leads/{leadId} {
+      // Only authenticated admins can manage leads
+      allow read, write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAdmin();
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "entities": {
+    "Lead": {
+      "title": "Lead",
+      "description": "A potential client lead with website and contact info",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "websiteUrl": { "type": "string", "format": "uri" },
+        "contactEmail": { "type": "string", "format": "email" },
+        "companyName": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "processing", "completed", "failed", "skipped"] },
+        "score": { "type": "integer" },
+        "language": { "type": "string", "enum": ["ru", "en"] },
+        "emailSent": { "type": "boolean" },
+        "skipReason": { "type": "string" },
+        "websiteText": { "type": "string" },
+        "screenshotUrl": { "type": "string" },
+        "generatedProposal": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["websiteUrl", "contactEmail", "status"]
+    }
+  },
+  "firestore": {
+    "/leads": {
+      "schema": "Lead",
+      "description": "Collection of business leads to be processed"
+    }
+  }
+}
